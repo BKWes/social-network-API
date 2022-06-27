@@ -35,10 +35,20 @@ const ThoughtSchema = new Schema({
         default: Date.now,
         get: (createdAtVal) => dateFormat(createdAtVal)
     },
-    user_id: {
-        type: ObjectId
+    username: {
+        type: String,
+        required: true
     },
     reactions: [ReactionSchema]
+
+    },
+    {
+        toJSON: {
+            virtuals: true,
+            getters: true
+        },
+        // prevent virtuals from duplicating _id as id
+        id: false
 });
 
 ThoughtSchema.virtual('reactionCount').get(function() {
