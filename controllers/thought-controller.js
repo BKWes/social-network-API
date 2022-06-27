@@ -34,27 +34,30 @@ const thoughtController = {
     },
 
     // POST new thought (push created _ID to user's thoughts)
-    createThought({ params, body }, res) {
-        User.findOne({ _id: body.userId }).then(userData => {
-            if (!userData) {
-                return res.status(404).json({ message: ' No user found with this ID' });
-            }
-        })
+    createThought({ body }, res) {
+        User.findOne({ username: body.username }).then(dbUserData => {
+			if (!dbUserData) {
+				res.status(404).json({
+					message: "No User found with this name!",
+				});
+				return;
+			}
         Thought.create(body)
         .then(thoughtData => {
             User.findOneAndUpdate(
-                { _id: params.userId },
+                { username: body.username },
                 { $push: { thoughts: data._id} },
                 { new: true }
             ).then(userData => {})
             res.json(thoughtData)
         })
         .catch(err => res.status(500).json(err));
+      })
     },
 
     // PUT update thought by _id
     updateThought({ params, body }, res) {
-        Thought.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
+        Thought.findOneAndUpdate({ _id: params.id }, body, { new: true })
         .then(thoughtData => {
             if (!thoughtData) {
                 res.status(404).json({ message: 'No thought found with this ID' });
@@ -88,7 +91,7 @@ const thoughtController = {
         Thought.findOneAndUpdate(
             { _id: params.thoughtId },
 			{ $push: { reactions: body } },
-			{ new: true, runValidators: true }
+			{ new: true }
         ).then(thoughtData => {
             if (!thoughtData) {
                 res.status(404).json({ message: 'No thought found with this ID' });

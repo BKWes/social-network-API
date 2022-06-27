@@ -51,7 +51,7 @@ const userController = {
 
     // PUT user using _id
     updateUser({ params, body }, res) {
-        User.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
+        User.findOneAndUpdate({ _id: params.id }, body, { new: true })
         .then(userData => {
             if (!userData) {
                 res.status(404).json({ message: 'No user found with this ID' });
@@ -86,8 +86,8 @@ const userController = {
     addFriend({ params }, res) {
         User.findOneAndUpdate(
             { _id: params.id },
-            { $push: { friends: params.friendid } },
-            { new: true, runValidators: true }
+            { $push: { friends: params.friendId } },
+            { new: true }
         )
         .then(userData => {
             if (!userData) {
@@ -102,8 +102,8 @@ const userController = {
     deleteFriend({ params }, res) {
         User.findOneAndUpdate(
             { _id: params.id },
-            { $pull: { friends: params.friendid } },
-            { new: true, runValidators: true }
+            { $pull: { friends: params.friendId } },
+            { new: true }
         )
         .then(userData => {
             if (!userData) {
