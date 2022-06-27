@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User, Thought } = require('../models');
 
 const userController = {
     // GET ALL users
@@ -24,6 +24,10 @@ const userController = {
             path: 'thoughts',
             select: '-__v'
         })
+        .populate({
+            path: 'friends',
+            select: '-__v'
+        })
         .select('-__v')
         .then(userData => {
             if (!userData) {
@@ -47,7 +51,7 @@ const userController = {
 
     // PUT user using _id
     updateUser({ params, body }, res) {
-        User.findOneAndUpdate({ _id: params.id }, body, { new: true })
+        User.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
         .then(userData => {
             if (!userData) {
                 res.status(404).json({ message: 'No user found with this ID' });
@@ -70,11 +74,45 @@ const userController = {
                 return;
             }
             res.status(200).json(userData);
+
+            Thought.deleteMany({ _id: { $in: userData.thoughts } });
         })
         .catch(err => {
             console.log(err);
             res.status(500).json(err);
         });
+    },
+    
+    addFriend({ params }, res) {
+        User.findOneAndUpdate(
+            { _id: params.id },
+            { $push: { friends: params.friendid } },
+            { new: true, runValidators: true }
+        )
+        .then(userData => {
+            if (!userData) {
+                res.status(400).json({ message: 'No user found with this ID' });
+                return;
+            };
+            res.status(200).json(userData);
+        })
+        .catch(err => res.status(500).json(err));
+    },
+
+    deleteFriend({ params }, res) {
+        User.findOneAndUpdate(
+            { _id: params.id },
+            { $pull: { friends: params.friendid } },
+            { new: true, runValidators: true }
+        )
+        .then(userData => {
+            if (!userData) {
+                res.status(400).json({ message: 'No user found with this ID' });
+                return;
+            };
+            res.status(200).json(userData);
+        })
+        .catch(err => res.status(500).json(err));
     }
 };
 
